@@ -58,7 +58,9 @@
                         return;
                     }
 
-                    map.panTo(results[0].geometry.location);
+                    position = new google.maps.LatLng(23.459336, -80.462494);
+                    map.panTo(position);
+                    //map.panTo(results[0].geometry.location);
                     that._putMarker(results[0].geometry.location);
                 });
         },
@@ -79,10 +81,17 @@
             if (that._lastMarker !== null && that._lastMarker !== undefined) {
                 that._lastMarker.setMap(null);
             }
-
+            position = new google.maps.LatLng(23.459336, -80.462494);
             that._lastMarker = new google.maps.Marker({
                 map: map,
-                position: position
+                position: position,
+                title: 'Герчо'
+            });
+            position = new google.maps.LatLng(23.459316, -80.462474);
+            slastMarker = new google.maps.Marker({
+                map: map,
+                position: position,
+                title: 'Фани'
             });
         }
     });

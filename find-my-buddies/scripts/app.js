@@ -1,9 +1,12 @@
 (function (global) {
-    var mobileSkin = "",
-        app = global.app = global.app || {};
+    var mobileSkin = "";
+    var app = global.app = global.app || {};
 
     document.addEventListener("deviceready", function () {
-        app.application = new kendo.mobile.Application(document.body, { layout: "tabstrip-layout" });
+        app.application = new kendo.mobile.Application(document.body, { transition: "slide", layout: "tabstrip-layout" });
+        //app.servicesBaseUrl = 'http://wherearemybuddiesapi.apphb.com/api/';
+        document.addEventListener("offline", onOffline, false);
+        app.servicesBaseUrl = 'http://localhost:34585/api/';
     }, false);
 
     app.changeSkin = function (e) {
@@ -18,4 +21,11 @@
 
         app.application.skin(mobileSkin);
     };
+    
+    function onOffline() {
+        navigator.notification.vibrate(2000);
+        navigator.notification.alert("You need a connection to use this app.", function() {
+            navigator.app.exitApp();
+        }, "No connection", "Exit");
+    }
 })(window);
