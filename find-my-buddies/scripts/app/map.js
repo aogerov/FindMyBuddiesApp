@@ -60,16 +60,16 @@
             that.buddieNickname = that.get("buddieNickname");
             
             for (var i = 0; i < that.buddieMarkers.length; i++) {
-                if(buddieMarkers[i].title === buddieNickname){
-                    map.panTo(buddieMarkers[i].position);
+                if (that.buddieMarkers[i].title === that.buddieNickname) {
+                    map.panTo(that.buddieMarkers[i].position);
                     foundBuddie = true;
                 }
             }
             
-            if(!foundBuddie){
+            if (!foundBuddie) {
                 navigator.notification.alert("Unable to find buddie name in your friends.",
-                                                     function () {
-                                                     }, "Search failed", 'OK');
+                                             function () {
+                                             }, "Search failed", 'OK');
             }
         },
 
@@ -106,7 +106,11 @@
                 map: map,
                 position: position,
                 title: app.nickname,
-                color: "#0000FF"
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    strokeColor: "#0000FF",
+                    scale: 8
+                }
             });
         },
 
@@ -114,7 +118,7 @@
             var that = this;
             that.buddieMarkers = [];
             
-            var buddies = app.buddies || {};
+            var buddies = app.buddies || [];
             for (var i = 0; i < buddies.length; i++) {
                 var buddie = buddies[i];
                 var position = new google.maps.LatLng(buddie.latitude, buddie.longitude);
@@ -131,7 +135,11 @@
                     map: map,
                     position: position,
                     title: buddie.nickname,
-                    color: buddieColor
+                    icon: {
+                        path: google.maps.SymbolPath .BACKWARD_CLOSED_ARROW,
+                        strokeColor: buddieColor,
+                        scale: 4
+                    }
                 });
                 
                 that.buddieMarkers.push(marker);

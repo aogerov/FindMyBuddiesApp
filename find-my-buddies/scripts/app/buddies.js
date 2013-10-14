@@ -2,8 +2,8 @@
     var BuddiesViewModel;
     var app = global.app = global.app || {};
     var defaulfCoordinates = {
-        latitude: "0",
-        longitude: "0"
+        latitude: "43.465187",
+        longitude: "-80.522372"
     };
 
     BuddiesViewModel = kendo.data.ObservableObject.extend({
@@ -17,8 +17,12 @@
         isFindBuddieActive: false,
         isFindResultActive: false,
         isBuddieFound: false,
+        isRequestAnswered: true,
         buddieNickname: "",
         buddieData: {},
+        buddieRequests: [],
+        onlineBuddies: [],
+        offlineBuddies: [],
         findResult: "",
         
         init: function () {
@@ -32,21 +36,22 @@
                 app.nickname = loggedData.nickname;
                 app.isLoggedIn = JSON.parse(loggedData.isLoggedIn || false);
             
-                that.set("sessionKey", app.sessionKey); 
-                that.set("nickname", app.nickname); 
+                that.set("sessionKey", loggedData.sessionKey); 
+                that.set("nickname", loggedData.nickname); 
                 that.set("isLoggedIn", app.isLoggedIn);    
             }
             
             app.myCoordinates = defaulfCoordinates;
         },       
 
-        onLogin: function () {
-            var that = this;
+        onLogin: function () {        
+            var that = this;            
             var username = that.get("username").trim();
             var password = that.get("password").trim();
 
             var areFieldsValid = that.validateLoginFields(username, password);
             if (areFieldsValid) {
+                app.application.showLoading(); 
                 var loginData = {
                     username : username,
                     authCode : CryptoJS.SHA1(username + password).toString()
@@ -56,7 +61,9 @@
                 .then(function(data) {
                     that.setLoggedInData(data);
                     that.updateCoorinates();
+                    that.getAllBuddies();
                 }, function(error) {
+                    app.application.hideLoading(); 
                     navigator.notification.alert("Server error!",
                                                  function () {
                                                  }, "Login failed", 'OK');
@@ -64,7 +71,7 @@
             }
         },
 
-        onRegister: function () {
+        onRegister: function () {         
             var that = this;
             var username = that.get("username").trim();
             var nickname = that.get("nickname").trim();
@@ -72,6 +79,7 @@
             
             var areFieldsValid = that.validateRegisterFields(username, nickname, password);
             if (areFieldsValid) {
+                app.application.showLoading(); 
                 var registerData = {
                     username : username,
                     nickname : nickname,
@@ -82,7 +90,9 @@
                 .then(function(data) {
                     that.setLoggedInData(data);
                     that.updateCoorinates();
+                    that.getAllBuddies();
                 }, function(error) {
+                    app.application.hideLoading(); 
                     navigator.notification.alert("Server error!",
                                                  function () {
                                                  }, "Register failed", 'OK');
@@ -94,9 +104,9 @@
             httpRequester.getJSON(app.servicesBaseUrl + 'users/logout?sessionKey=' + this.sessionKey)
             .then(function(data) { 
             }, function(error) {
-                /*navigator.notification.alert("Server error!",
-                function () {
-                }, "Logout failed", 'OK');*/
+                //navigator.notification.alert("Server error!",
+                //function () {
+                //}, "Logout failed", 'OK');
             });
             
             window.localStorage.setItem("loggedData", JSON.stringify({
@@ -166,6 +176,10 @@
             this.set("isBuddieFound", false);
         },
         
+        onUpdateBuddies: function() {
+            this.getAllBuddies();
+        },
+        
         setLoggedInData: function(data) {
             data.isLoggedIn = true;
             window.localStorage.setItem("loggedData", JSON.stringify(data));
@@ -191,6 +205,40 @@
                 
                 app.myCoordinates = coordinates;
                 httpRequester.postJSON(app.servicesBaseUrl + "coordinates/update?sessionKey=" + that.sessionKey, coordinates);
+            });
+        },
+        
+        getAllBuddies: function() {  
+            var that = this;
+            
+            httpRequester.getJSON(app.servicesBaseUrl + 'requests/all?sessionKey=' + that.sessionKey)
+            .then(function(data) {
+                that.set("buddieRequests", data);
+            });
+            
+            httpRequester.getJSON(app.servicesBaseUrl + 'friends/all?sessionKey=' + that.sessionKey)
+            .then(function(data) {
+                app.buddies = data;
+                var onlineBuddies = [];
+                var offlineBuddies = [];
+                
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].isOnline) {
+                        onlineBuddies.push(data[i]);
+                    }
+                    else {
+                        offlineBuddies.push(data[i]);
+                    }
+                }
+                
+                that.set("onlineBuddies", onlineBuddies);
+                that.set("offlineBuddies", offlineBuddies);   
+                app.application.hideLoading();
+            }, function(error) {
+                app.application.hideLoading();                
+                navigator.notification.alert("Server error!",
+                                             function () {
+                                             }, "Could not connect to buddies base", 'OK');
             });
         },
         
@@ -223,6 +271,9 @@
             this.set("isLoginActive", true);                 
             this.set("isRegisterActive", false);
             this.set("isLoggedIn", false);
+            this.set("buddieRequests", []);
+            this.set("onlineBuddies", []);
+            this.set("offlineBuddies", []);
         },        
           
         validateNickname: function(nickname) {
@@ -292,6 +343,24 @@
             else {
                 return true;
             }
+        },
+        
+        answerRequest: function(ev) {    
+            var that = this;
+            
+            var response = {
+                fromUserId: ev.dataItem.fromUserId,
+                fromUserNickname: ev.dataItem.fromUserNickname,
+                isAccepted: true,
+                isLeftForLater: false
+            };
+        
+            that.set("isRequestAnswered", false);
+            httpRequester.postJSON(app.servicesBaseUrl + "requests/response?sessionKey=" + that.sessionKey, response);
+            //.then(httpRequester.getJSON(app.servicesBaseUrl + 'requests/all?sessionKey=' + that.sessionKey)
+            //.then(function(data) {
+            //    that.set("buddieRequests", data);
+            //}));
         }
     });
 

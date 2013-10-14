@@ -4,9 +4,9 @@
 
     document.addEventListener("deviceready", function () {
         app.application = new kendo.mobile.Application(document.body, { transition: "slide", layout: "tabstrip-layout" });
-        //app.servicesBaseUrl = 'http://wherearemybuddiesapi.apphb.com/api/';
+        app.servicesBaseUrl = 'http://wherearemybuddiesapi.apphb.com/api/';
+        //app.servicesBaseUrl = 'http://localhost:34585/api/';
         document.addEventListener("offline", onOffline, false);
-        app.servicesBaseUrl = 'http://localhost:34585/api/';
     }, false);
 
     app.changeSkin = function (e) {

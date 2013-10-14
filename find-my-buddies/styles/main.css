@@ -258,7 +258,7 @@ body, html
 .km-flat .km-list>li
 {
     background: none;
-    border: none;
+    /*border: none;*/
 }
 
 /* Separator Style*/
@@ -362,6 +362,44 @@ body, html
 }
 
 .search-button:hover
+{
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.buddie-item
+{
+    margin: 0;
+}
+
+#online-buddies p, #offline-buddies p
+{
+    display: inline-block;
+    float: left;
+}
+
+#online-buddies div, #offline-buddies div
+{
+    /*vertical-align: center;*/
+    margin-top: 5px;
+    display: inline-block;
+    float: right;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+}
+
+#online-buddies div
+{
+    background: #0f0;
+}
+
+#offline-buddies div
+{
+    background: #f00;
+}
+
+.buddie-requests-item:hover
 {
     cursor: pointer;
     opacity: 0.5;
